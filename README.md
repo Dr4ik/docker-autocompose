@@ -1,23 +1,31 @@
 # docker-autocompose
 Generates a docker-compose yaml definition from a running container.
 
+This is a fork of [Red5d/docker-autocompose](https://github.com/Red5d/docker-autocompose) I've just refactored it and shamelessly
+added myself as co-author :).
+
 Required Modules:
 * [pyaml](https://pypi.python.org/pypi/pyaml/)
 * [docker-py](https://pypi.python.org/pypi/docker-py)
 
+Installation:
+You can install it dirrectly from github:
+
+    pip install git+https://github.com/Dr4ik/docker-autocompose.git
+
 Example Usage:
 
-    sudo python autocompose.py <container-name-or-id>
+    sudo docker-autocompose <container-name-or-id>
 
 
 Generate a compose file for multiple containers together:
 
-    sudo python autocompose.py apache-test mysql-test
+    sudo docker-autocompose apache-test mysql-test
 
 
 The script defaults to outputting to compose file version 3, but use "-v 1" to output to version 1:
 
-    sudo python autocompose.py -v 1 apache-test
+    sudo docker-autocompose -v 1 apache-test
 
 
 Outputs a docker-compose compatible yaml structure:
