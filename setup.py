@@ -9,10 +9,5 @@ setup(
     keywords = "docker yaml container",
     packages = find_packages(),
     install_requires = ['pyaml>=17.12.1', 'docker>=3.4.1'],
-    scripts = ['autocompose.py'],
-    entry_points={
-        'console_scripts': [
-            'autocompose = autocompose:main',
-        ]
-    }
+    scripts = ['bin/docker-autocompose'],
 )
