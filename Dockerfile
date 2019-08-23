@@ -1,9 +1,9 @@
 FROM python:3-alpine
 
-WORKDIR /usr/src/app
+WORKDIR /opt
 
 COPY . .
 
 RUN python ./setup.py install
 
-ENTRYPOINT [ "python", "./autocompose.py" ]
+ENTRYPOINT ["docker-autocompose"]
