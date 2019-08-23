@@ -20,9 +20,9 @@ def render(container_names, version=3):
         struct.update(cfile)
 
     if version == 1:
-        pyaml.p(OrderedDict(struct), safe=False)
+        return pyaml.dump(OrderedDict(struct), safe=False)
     elif version == 3:
-        pyaml.p(OrderedDict({'version': '3', 'services': struct, 'networks': networks}), safe=False)
+        return pyaml.dump(OrderedDict({'version': '3', 'services': struct, 'networks': networks}), safe=False)
     else:
         raise NotImplementedError('Not implemented for version {}'.format(version))
 
