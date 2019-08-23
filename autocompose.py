@@ -31,6 +31,12 @@ def _value_valid(value):
 
 
 def get_value_mapping(cattrs):
+    def _networks(attrs):
+        return {x: {'aliases': attrs[x]['Aliases']} for x in attrs.keys()}
+
+    def _ports(attrs):
+        return [f"{attrs[key][0]['HostIp']}:{attrs[key][0]['HostPort']}:{key}" for key in attrs]
+
     mapping = {
         'cap_add': cattrs['HostConfig']['CapAdd'],
         'cap_drop': cattrs['HostConfig']['CapDrop'],
@@ -48,10 +54,7 @@ def get_value_mapping(cattrs):
             'driver': cattrs['HostConfig']['LogConfig']['Type'],
             'options': cattrs['HostConfig']['LogConfig']['Config']
         },
-        'networks': {
-            x: {'aliases': cattrs['NetworkSettings']['Networks'][x]['Aliases']}
-            for x in cattrs['NetworkSettings']['Networks'].keys()
-        },
+        'networks': _networks(cattrs['NetworkSettings']['Networks']),
         'security_opt': cattrs['HostConfig']['SecurityOpt'],
         'ulimits': cattrs['HostConfig']['Ulimits'],
         'volumes': cattrs['HostConfig']['Binds'],
@@ -77,9 +80,7 @@ def get_value_mapping(cattrs):
 
     try:
         expose_value = list(cattrs['Config']['ExposedPorts'].keys())
-        ports_value = [
-            cattrs['HostConfig']['PortBindings'][key][0]['HostIp'] + ':' + cattrs['HostConfig']['PortBindings'][key][0][
-                'HostPort'] + ':' + key for key in cattrs['HostConfig']['PortBindings']]
+        ports_value = _ports(cattrs['HostConfig']['PortBindings'])
 
         # If bound ports found, don't use the 'expose' value.
         if _value_valid(ports_value):
