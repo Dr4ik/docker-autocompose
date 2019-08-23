@@ -1,6 +1,6 @@
-#! /usr/bin/env python
-
-import sys, argparse, pyaml, docker
+import docker
+import pyaml
+import sys
 from collections import OrderedDict
 
 
@@ -11,33 +11,27 @@ def string_representer(dumper, data):
 pyaml.UnsafePrettyYAMLDumper.add_representer(str, string_representer)
 
 
-def main():
-    parser = argparse.ArgumentParser(description='Generate docker-compose yaml definition from running container.')
-    parser.add_argument('-v', '--version', type=int, default=3, help='Compose file version (1 or 3)') 
-    parser.add_argument('cnames', nargs='*', type=str, help='The name of the container to process.')
-    args = parser.parse_args()
-
+def render(container_names, version=3):
     struct = {}
     networks = []
-    for cname in args.cnames:
-        cfile, networks = generate(cname)
+
+    for cname in container_names:
+        cfile, networks = _generate(cname)
         struct.update(cfile)
 
-    render(struct, args, networks)
-
-
-def render(struct, args, networks):
-    if args.version == 1:
+    if version == 1:
         pyaml.p(OrderedDict(struct), safe=False)
-    else:
+    elif version == 3:
         pyaml.p(OrderedDict({'version': '3', 'services': struct, 'networks': networks}), safe=False)
-    
+    else:
+        raise NotImplementedError('Not implemented for version {}'.format(version))
+
 
 def _value_valid(value):
     return value and value not in ('null', 'default', ',', 'no')
 
 
-def get_value_mapping(cattrs):
+def _get_value_mapping(cattrs):
     def _networks(attrs):
         return {x: {'aliases': attrs[x]['Aliases']} for x in attrs.keys()}
 
@@ -107,7 +101,7 @@ def get_value_mapping(cattrs):
     return mapping
 
 
-def build_networks(networks_list, network_keys):
+def _build_networks(networks_list, network_keys):
     return {
         network.attrs['Name']: {
             'external': not network.attrs['Internal']
@@ -116,7 +110,7 @@ def build_networks(networks_list, network_keys):
     }
 
 
-def build_service(cattrs, value_map):
+def _build_service(cattrs, value_map):
     service_name = cattrs['Name'][1:]
     return {
         service_name: {
@@ -125,7 +119,7 @@ def build_service(cattrs, value_map):
     }
 
 
-def generate(cname):
+def _generate(cname):
     c = docker.from_env()
 
     try:
@@ -135,11 +129,6 @@ def generate(cname):
         sys.exit(1)
 
     cattrs = c.containers.get(cid).attrs
-    values = get_value_mapping(cattrs)
+    values = _get_value_mapping(cattrs)
 
-    return build_service(cattrs, values), build_networks(c.networks.list(), values['networks'].keys())
-
-
-if __name__ == "__main__":
-    main()
-
+    return _build_service(cattrs, values), _build_networks(c.networks.list(), values['networks'].keys())

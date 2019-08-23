@@ -1,0 +1,1 @@
+from docker_autocompose.autocompose import render
