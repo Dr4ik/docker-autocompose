@@ -99,7 +99,7 @@ def get_value_mapping(cattrs):
 def build_networks(networks_list, network_keys):
     return {
         network.attrs['Name']: {
-            'external': (not network.attrs['Internal'])
+            'external': not network.attrs['Internal']
         }
         for network in networks_list if network.attrs['Name'] in network_keys
     }
