@@ -4,6 +4,13 @@ import sys, argparse, pyaml, docker
 from collections import OrderedDict
 
 
+def string_representer(dumper, data):
+    return dumper.represent_scalar('tag:yaml.org,2002:str', data)
+
+
+pyaml.UnsafePrettyYAMLDumper.add_representer(str, string_representer)
+
+
 def main():
     parser = argparse.ArgumentParser(description='Generate docker-compose yaml definition from running container.')
     parser.add_argument('-v', '--version', type=int, default=3, help='Compose file version (1 or 3)') 
@@ -21,9 +28,9 @@ def main():
 
 def render(struct, args, networks):
     if args.version == 1:
-        pyaml.p(OrderedDict(struct))
+        pyaml.p(OrderedDict(struct), safe=False)
     else:
-        pyaml.p(OrderedDict({'version': '3', 'services': struct, 'networks': networks}))
+        pyaml.p(OrderedDict({'version': '3', 'services': struct, 'networks': networks}), safe=False)
     
 
 def _value_valid(value):
