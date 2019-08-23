@@ -35,7 +35,10 @@ def get_value_mapping(cattrs):
         return {x: {'aliases': attrs[x]['Aliases']} for x in attrs.keys()}
 
     def _ports(attrs):
-        return [f"{attrs[key][0]['HostIp']}:{attrs[key][0]['HostPort']}:{key}" for key in attrs]
+        return [
+            "{}:{}:{}".format(attrs[key][0]['HostIp'], attrs[key][0]['HostPort'], key)
+            for key in attrs
+        ]
 
     mapping = {
         'cap_add': cattrs['HostConfig']['CapAdd'],
