@@ -125,8 +125,8 @@ def _generate(cname):
     try:
         cid = [x.short_id for x in c.containers.list() if cname == x.name or x.short_id in cname][0]
     except IndexError:
-        print("That container is not running.")
-        sys.exit(1)
+        raise RuntimeError('Container with name or id "{}" is not running'.format(cname))
+
 
     cattrs = c.containers.get(cid).attrs
     values = _get_value_mapping(cattrs)
