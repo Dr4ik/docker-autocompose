@@ -24,7 +24,7 @@ def render(container_names, version=3):
 
     with io.StringIO() as buffer:
         if version == 1:
-            return y.dump(OrderedDict(struct), buffer)
+            y.dump(OrderedDict(struct), buffer)
         elif version == 3:
             d = OrderedDict({'version': '3', 'services': struct})
 
@@ -32,9 +32,10 @@ def render(container_names, version=3):
                 d.update({'networks': networks})
 
             y.dump(d, buffer)
-            return buffer.getvalue()
         else:
             raise NotImplementedError('Not implemented for version {}'.format(version))
+
+        return buffer.getvalue()
 
 
 def _value_valid(value):
