@@ -12,7 +12,8 @@ setup(
     install_requires=[
         'pyaml>=17.12.1',
         'docker>=3.4.1',
-        'ruamel.yaml>==0.16.5'
+        'ruamel.yaml>==0.16.5',
+        'toolz>=0.10.0'
     ],
     scripts=['bin/docker-autocompose'],
 )

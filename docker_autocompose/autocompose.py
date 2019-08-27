@@ -1,8 +1,10 @@
 import io
+import re
 from collections import OrderedDict
 
 import docker
 from ruamel.yaml import YAML
+from toolz import get
 
 y = YAML(typ='rt')
 y.default_flow_style = False
@@ -58,6 +60,18 @@ def _get_value_mapping(cattrs):
         cmd.fa.set_flow_style()
         return cmd
 
+    def _links(attrs):
+        if not attrs:
+            return None
+
+        return [
+            '{}:{}'.format(
+                *get([1, 2], re.compile(r'/(\w+):/(\w+)/(\w+)').match(attr).groups())
+            )
+            for attr in attrs
+        ]
+
+
     mapping = {
         'command': _cmd(),
         'cap_add': cattrs['HostConfig']['CapAdd'],
@@ -71,7 +85,7 @@ def _get_value_mapping(cattrs):
         'extra_hosts': cattrs['HostConfig']['ExtraHosts'],
         'image': cattrs['Config']['Image'],
         'labels': cattrs['Config']['Labels'],
-        'links': cattrs['HostConfig']['Links'],
+        'links': _links(cattrs['HostConfig']['Links']),
         'logging': {
             'driver': cattrs['HostConfig']['LogConfig']['Type'],
             'options': cattrs['HostConfig']['LogConfig']['Config']
