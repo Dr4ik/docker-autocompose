@@ -66,7 +66,7 @@ def _get_value_mapping(cattrs):
 
         return [
             '{}:{}'.format(
-                *get([1, 2], re.compile(r'/(\w+):/(\w+)/(\w+)').match(attr).groups())
+                *get([0, 2], re.compile(r'/(\w+):/(\w+)/(\w+)').match(attr).groups())
             )
             for attr in attrs
         ]
