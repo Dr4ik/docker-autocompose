@@ -1,8 +1,7 @@
 import io
-import docker
 from collections import OrderedDict
 
-
+import docker
 from ruamel.yaml import YAML
 
 y = YAML(typ='rt')
@@ -11,6 +10,7 @@ y.indent(offset=2)
 
 # Getting rid of tags for OrderedDict
 y.Representer.add_representer(OrderedDict, y.Representer.represent_dict)
+
 
 def render(container_names, version=3):
     struct = {}
@@ -145,8 +145,8 @@ def _generate(cname):
     except IndexError:
         raise RuntimeError('Container with name or id "{}" is not running'.format(cname))
 
-
     cattrs = c.containers.get(cid).attrs
     values = _get_value_mapping(cattrs)
 
-    return _build_service(cattrs, values), _build_networks(c.networks.list(), cattrs['NetworkSettings']['Networks'].keys())
+    return _build_service(cattrs, values), _build_networks(c.networks.list(),
+                                                           cattrs['NetworkSettings']['Networks'].keys())
