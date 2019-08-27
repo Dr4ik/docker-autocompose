@@ -55,8 +55,8 @@ def _get_value_mapping(cattrs):
             for key in attrs
         ]
 
-    def _cmd():
-        cmd = y.seq(map(str, cattrs['Config']['Cmd']))
+    def _cmd(attrs):
+        cmd = y.seq(map(str, attrs))
         cmd.fa.set_flow_style()
         return cmd
 
@@ -71,9 +71,8 @@ def _get_value_mapping(cattrs):
             for attr in attrs
         ]
 
-
     mapping = {
-        'command': _cmd(),
+        'command': _cmd(cattrs['Config']['Cmd']),
         'cap_add': cattrs['HostConfig']['CapAdd'],
         'cap_drop': cattrs['HostConfig']['CapDrop'],
         'cgroup_parent': cattrs['HostConfig']['CgroupParent'],
