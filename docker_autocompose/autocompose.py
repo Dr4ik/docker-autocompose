@@ -1,15 +1,16 @@
+import io
 import docker
-import pyaml
-import sys
 from collections import OrderedDict
 
 
-def string_representer(dumper, data):
-    return dumper.represent_scalar('tag:yaml.org,2002:str', data)
+from ruamel.yaml import YAML
 
+y = YAML(typ='rt')
+y.default_flow_style = False
+y.indent(offset=2)
 
-pyaml.UnsafePrettyYAMLDumper.add_representer(str, string_representer)
-
+# Getting rid of tags for OrderedDict
+y.Representer.add_representer(OrderedDict, y.Representer.represent_dict)
 
 def render(container_names, version=3):
     struct = {}
@@ -19,12 +20,19 @@ def render(container_names, version=3):
         cfile, networks = _generate(cname)
         struct.update(cfile)
 
-    if version == 1:
-        return pyaml.dump(OrderedDict(struct), safe=False)
-    elif version == 3:
-        return pyaml.dump(OrderedDict({'version': '3', 'services': struct, 'networks': networks}), safe=False)
-    else:
-        raise NotImplementedError('Not implemented for version {}'.format(version))
+    with io.StringIO() as buffer:
+        if version == 1:
+            return y.dump(OrderedDict(struct), buffer)
+        elif version == 3:
+            d = OrderedDict({'version': '3', 'services': struct})
+
+            if networks:
+                d.update({'networks': networks})
+
+            y.dump(d, buffer)
+            return buffer.getvalue()
+        else:
+            raise NotImplementedError('Not implemented for version {}'.format(version))
 
 
 def _value_valid(value):
@@ -33,7 +41,11 @@ def _value_valid(value):
 
 def _get_value_mapping(cattrs):
     def _networks(attrs):
-        return {x: {'aliases': attrs[x]['Aliases']} for x in attrs.keys()}
+        return {
+            network_name: {'aliases': attrs[network_name]['Aliases']}
+            for network_name in attrs.keys()
+            if attrs[network_name]['Aliases']
+        }
 
     def _ports(attrs):
         return [
@@ -41,7 +53,13 @@ def _get_value_mapping(cattrs):
             for key in attrs
         ]
 
+    def _cmd():
+        cmd = y.seq(map(str, cattrs['Config']['Cmd']))
+        cmd.fa.set_flow_style()
+        return cmd
+
     mapping = {
+        'command': _cmd(),
         'cap_add': cattrs['HostConfig']['CapAdd'],
         'cap_drop': cattrs['HostConfig']['CapDrop'],
         'cgroup_parent': cattrs['HostConfig']['CgroupParent'],
@@ -131,4 +149,4 @@ def _generate(cname):
     cattrs = c.containers.get(cid).attrs
     values = _get_value_mapping(cattrs)
 
-    return _build_service(cattrs, values), _build_networks(c.networks.list(), values['networks'].keys())
+    return _build_service(cattrs, values), _build_networks(c.networks.list(), cattrs['NetworkSettings']['Networks'].keys())

@@ -8,6 +8,10 @@ setup(
     license = "GPLv2",
     keywords = "docker yaml container",
     packages = find_packages(),
-    install_requires = ['pyaml>=17.12.1', 'docker>=3.4.1'],
+    install_requires = [
+        'pyaml>=17.12.1',
+        'docker>=3.4.1',
+        'ruamel.yaml>==0.16.5'
+    ],
     scripts = ['bin/docker-autocompose'],
 )
