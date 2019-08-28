@@ -8,6 +8,7 @@ from toolz import get
 
 y = YAML(typ='rt')
 y.default_flow_style = False
+y.sort_base_mapping_type_on_output = False
 y.indent(offset=2)
 
 
