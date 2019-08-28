@@ -72,13 +72,16 @@ def _get_value_mapping(cattrs):
             for attr in attrs
         ]
 
+    def _devices(attrs):
+        return ['{}:{}'.format(*get(['PathOnHost', 'PathInContainer'], dev)) for dev in attrs]
+
     mapping = {
         'command': _cmd(cattrs['Config']['Cmd']),
         'cap_add': cattrs['HostConfig']['CapAdd'],
         'cap_drop': cattrs['HostConfig']['CapDrop'],
         'cgroup_parent': cattrs['HostConfig']['CgroupParent'],
         'container_name': cattrs['Name'][1:],
-        'devices': cattrs['HostConfig']['Devices'],
+        'devices': _devices(cattrs['HostConfig']['Devices']),
         'dns': cattrs['HostConfig']['Dns'],
         'dns_search': cattrs['HostConfig']['DnsSearch'],
         'environment': cattrs['Config']['Env'],
