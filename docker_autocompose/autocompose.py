@@ -1,17 +1,14 @@
 import io
 import re
-from collections import OrderedDict
 
 import docker
 from ruamel.yaml import YAML
+from ruamel.yaml.comments import CommentedMap
 from toolz import get
 
 y = YAML(typ='rt')
 y.default_flow_style = False
 y.indent(offset=2)
-
-# Getting rid of tags for OrderedDict
-y.Representer.add_representer(OrderedDict, y.Representer.represent_dict)
 
 
 def render(container_names, version=3):
@@ -24,9 +21,9 @@ def render(container_names, version=3):
 
     with io.StringIO() as buffer:
         if version == 1:
-            y.dump(OrderedDict(struct), buffer)
+            y.dump(CommentedMap(struct), buffer)
         elif version == 3:
-            d = OrderedDict({'version': '3', 'services': struct})
+            d = CommentedMap({'version': '3', 'services': struct})
 
             if networks:
                 d.update({'networks': networks})
