@@ -41,6 +41,9 @@ def _value_valid(value):
 
 def _get_value_mapping(cattrs):
     def _networks(attrs):
+        if not attrs:
+            return None
+
         return {
             network_name: {'aliases': attrs[network_name]['Aliases']}
             for network_name in attrs.keys()
@@ -48,12 +51,18 @@ def _get_value_mapping(cattrs):
         }
 
     def _ports(attrs):
+        if not attrs:
+            return None
+
         return [
             "{}:{}:{}".format(attrs[key][0]['HostIp'], attrs[key][0]['HostPort'], key)
             for key in attrs
         ]
 
     def _cmd(attrs):
+        if not attrs:
+            return None
+
         cmd = y.seq(map(str, attrs))
         cmd.fa.set_flow_style()
         return cmd
@@ -70,6 +79,9 @@ def _get_value_mapping(cattrs):
         ]
 
     def _devices(attrs):
+        if not attrs:
+            return None
+
         return ['{}:{}'.format(*get(['PathOnHost', 'PathInContainer'], dev)) for dev in attrs]
 
     mapping = {
