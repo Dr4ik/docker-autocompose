@@ -64,7 +64,7 @@ def convert(key, val):
         
         return [
             '{}:{}'.format(
-                *get([0, 2], .groups())
+                *get([0, 2], match.groups())
             )
             for attr in attrs
         ]
