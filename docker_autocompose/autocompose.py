@@ -54,20 +54,16 @@ def convert(key, val):
         return cmd
 
     def _links(attrs):
-        if not attrs:
-            return None
-        
-        match = re.compile(r'/(\w+):/(\w+)/(\w+)').match(attr)
+        result = []
 
-        if not match:
-            return None
-        
-        return [
-            '{}:{}'.format(
-                *get([0, 2], match.groups())
-            )
-            for attr in attrs
-        ]
+        for attr in attrs:
+            match = re.compile(r'/(\w+):/(\w+)/(\w+)').match(attr))
+            if not match:
+                continue
+
+            result.append('{}:{}'.format(*get([0, 2], match.groups()))
+
+        return result
 
     def _devices(attrs):
         return ['{}:{}'.format(*get(['PathOnHost', 'PathInContainer'], dev)) for dev in attrs]
