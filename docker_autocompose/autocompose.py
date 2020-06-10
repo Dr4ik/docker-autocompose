@@ -40,30 +40,15 @@ def _value_valid(value):
     return value and value not in ('null', 'default', ',', 'no')
 
 
-def _get_value_mapping(cattrs):
+def convert(key, val):
     def _networks(attrs):
-        if not attrs:
-            return None
-
         return {
             network_name: {'aliases': attrs[network_name]['Aliases']}
             for network_name in attrs.keys()
             if attrs[network_name]['Aliases']
         }
 
-    def _ports(attrs):
-        if not attrs:
-            return None
-
-        return [
-            "{}:{}:{}".format(attrs[key][0]['HostIp'], attrs[key][0]['HostPort'], key)
-            for key in attrs
-        ]
-
     def _cmd(attrs):
-        if not attrs:
-            return None
-
         cmd = y.seq(map(str, attrs))
         cmd.fa.set_flow_style()
         return cmd
@@ -71,39 +56,58 @@ def _get_value_mapping(cattrs):
     def _links(attrs):
         if not attrs:
             return None
+        
+        match = re.compile(r'/(\w+):/(\w+)/(\w+)').match(attr)
 
+        if not match:
+            return None
+        
         return [
             '{}:{}'.format(
-                *get([0, 2], re.compile(r'/(\w+):/(\w+)/(\w+)').match(attr).groups())
+                *get([0, 2], .groups())
             )
             for attr in attrs
         ]
 
     def _devices(attrs):
-        if not attrs:
-            return None
-
         return ['{}:{}'.format(*get(['PathOnHost', 'PathInContainer'], dev)) for dev in attrs]
 
+    f = {
+        'command': _cmd,
+        'devices': _devices,
+        'links': _links,
+        'networks': _networks
+    }.get(key)
+
+    if not callable(f):
+        return val
+
+    if not val:
+        return val
+
+    return f(val)
+
+
+def _get_value_mapping(cattrs):
     mapping = {
-        'command': _cmd(cattrs['Config']['Cmd']),
+        'command': cattrs['Config']['Cmd'],
         'cap_add': cattrs['HostConfig']['CapAdd'],
         'cap_drop': cattrs['HostConfig']['CapDrop'],
         'cgroup_parent': cattrs['HostConfig']['CgroupParent'],
         'container_name': cattrs['Name'][1:],
-        'devices': _devices(cattrs['HostConfig']['Devices']),
+        'devices': cattrs['HostConfig']['Devices'],
         'dns': cattrs['HostConfig']['Dns'],
         'dns_search': cattrs['HostConfig']['DnsSearch'],
         'environment': cattrs['Config']['Env'],
         'extra_hosts': cattrs['HostConfig']['ExtraHosts'],
         'image': cattrs['Config']['Image'],
         'labels': cattrs['Config']['Labels'],
-        'links': _links(cattrs['HostConfig']['Links']),
+        'links': cattrs['HostConfig']['Links'],
         'logging': {
             'driver': cattrs['HostConfig']['LogConfig']['Type'],
             'options': cattrs['HostConfig']['LogConfig']['Config']
         },
-        'networks': _networks(cattrs['NetworkSettings']['Networks']),
+        'networks': cattrs['NetworkSettings']['Networks'],
         'security_opt': cattrs['HostConfig']['SecurityOpt'],
         'ulimits': cattrs['HostConfig']['Ulimits'],
         'volumes': cattrs['HostConfig']['Binds'],
@@ -126,6 +130,18 @@ def _get_value_mapping(cattrs):
         'stdin_open': cattrs['Config']['OpenStdin'],
         'tty': cattrs['Config']['Tty']
     }
+
+    mapping = { k: convert(k, v) for k, v in mapping.items() }
+
+    def _ports(attrs):
+        if not attrs:
+            return None
+
+        return [
+            "{}:{}:{}".format(attrs[key][0]['HostIp'], attrs[key][0]['HostPort'], key)
+            for key in attrs
+        ]
+
 
     try:
         expose_value = list(cattrs['Config']['ExposedPorts'].keys())
