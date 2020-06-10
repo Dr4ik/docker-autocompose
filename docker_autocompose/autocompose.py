@@ -57,11 +57,11 @@ def convert(key, val):
         result = []
 
         for attr in attrs:
-            match = re.compile(r'/(\w+):/(\w+)/(\w+)').match(attr))
+            match = re.compile(r'/(\w+):/(\w+)/(\w+)').match(attr)
             if not match:
                 continue
 
-            result.append('{}:{}'.format(*get([0, 2], match.groups()))
+            result.append('{}:{}'.format(*get([0, 2], match.groups())))
 
         return result
 
