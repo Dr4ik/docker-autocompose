@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="docker-autocompose",
-    version="1.3.0",
+    version="1.4.0",
     description="Generate a docker-compose yaml definition from a running container",
     url="https://github.com/Dr4ik/docker-autocompose",
     author="Red5d Dr4ik",
